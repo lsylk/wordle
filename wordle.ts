@@ -14,28 +14,41 @@ async function wordle() {
     let attempts = 0;
 
     while (attempts < 6) {
-        attempts += 1;
 
-        // get guess from player
-        let result = await new Promise((resolve, reject) => {
-            prompt.get([{description: 'Provide a 5 letter word', name: 'guess'}], function (err, result) {
-                if (err) {
-                    return reject(err)
-                }
-                return resolve(result.guess);
-            });
-        })
-        console.log(`Attempt # ${attempts}: ` + result);
+        try {
+            let result = await new Promise((resolve, reject) => {
+                prompt.get([{description: 'Provide a 5 letter word', name: 'guess'}], function (err, result) {
+                    if (err) {
+                        return reject(err)
+                    }
+                    if (result.guess.toString().length !== 5) {
+    
+                        return reject("The word needs to be 5 letters long. Try again. ")
+                    }
+                    return resolve(result.guess);
+                });
+            })
 
-        const guess = result as string;
 
-        if (!isCorrectGuess(word, guess)) {
+            // get guess from player
+            attempts += 1;
+        
+            console.log(`Attempt # ${attempts}: ` + result);
 
-            giveHint(word, guess)
-        } else {
-            console.log(`${chalk.bgGreen(guess)} is the word! Amazing!`)
-            return
+            const guess = result as string;
+
+            if (!isCorrectGuess(word, guess)) {
+
+                giveHint(word, guess)
+            } else {
+                console.log(`${chalk.bgGreen(guess)} is the word! Amazing!`)
+                return
+            }
+
+        } catch(err) {
+            console.log(err)
         }
+        
     }
 
     console.log(`The correct word is ${chalk.bgMagenta(word)}. Sorry, try again!`)
@@ -65,8 +78,6 @@ export function giveHint(word: string, guess: string) {
     console.log(result)
     return result
 }
-
-
 
 if (process.argv[1] === import.meta.filename) {
   wordle()
